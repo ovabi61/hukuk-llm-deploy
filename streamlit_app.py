@@ -24,7 +24,7 @@ load_dotenv()
 st.title('🎈 App Name')
 
 #API KEY
-api_key = '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' #Lawyer KEy
+api_key = '' #Lawyer KEy
 os.environ["OPENAI_API_KEY"] = api_key
 
 import pinecone
