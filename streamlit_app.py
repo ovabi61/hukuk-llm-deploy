@@ -2,6 +2,8 @@ import os
 import openai
 import sys
 import datetime
+import chainlit as cl
+
 
 from langchain.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
@@ -10,9 +12,6 @@ from langchain.vectorstores import Chroma, Pinecone
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-
-import chainlit as cl
-
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -21,6 +20,8 @@ from langchain.schema.runnable.config import RunnableConfig
 
 from dotenv import load_dotenv
 load_dotenv()
+
+st.title('🎈 App Name')
 
 #API KEY
 api_key = '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' #Lawyer KEy
