@@ -35,7 +35,7 @@ def generate_response( openai_api_key, query_text):
     QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
     # Vector Database mounting
-    embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     persist_directory = 'docs/chroma/'
     # vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     index_name = "llm-hukuk"
