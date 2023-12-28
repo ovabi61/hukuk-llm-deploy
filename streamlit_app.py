@@ -1,9 +1,7 @@
-import streamlit as s
 import os
 import openai
 import sys
 import datetime
-import chainlit as cl
 
 from langchain.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
@@ -12,6 +10,9 @@ from langchain.vectorstores import Chroma, Pinecone
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
+
+import chainlit as cl
+
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -22,8 +23,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #API KEY
-api_key = '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' #Lawyer KEy
+api_key = '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' #Lawyer KEy
 os.environ["OPENAI_API_KEY"] = api_key
+
+import pinecone
+
+pinecone.init(
+    api_key="5f0d4072-6003-4bca-b183-1d35f312c804",
+    environment="gcp-starter",
+)
 
 @cl.on_chat_start
 async def on_chat_start():
@@ -102,3 +110,17 @@ async def on_message(message: cl.Message):
     await cl.Message(content=answer).send() #, elements=text_elements
     #chainlit run app.py -w
 
+
+    """
+    runnable = cl.user_session.get("runnable")  # type: Runnable
+
+    msg = cl.Message(content="")
+
+    async for chunk in runnable.astream(
+        {"question": message.content},
+        config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
+    ):
+        await msg.stream_token(chunk)
+
+    await msg.send()
+    """
