@@ -49,8 +49,8 @@ def generate_response( openai_api_key, query_text):
         return_source_documents=True,
         chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
     )
-
-    return qa_chain({"query": query_text})
+    result = qa_chain({"query": query_text})
+    return result["result"]
 
 # Page title
 st.set_page_config(page_title='🦜🔗 Ask the Doc App')
