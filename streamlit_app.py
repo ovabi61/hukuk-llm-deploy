@@ -1,8 +1,15 @@
+import streamlit as st
+
+st.title('🎈 Hukuk LLM')
+
+st.write('Hello world!')
+
 import os
 import openai
 import sys
 import datetime
 import chainlit as cl
+
 
 
 from langchain.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
@@ -21,7 +28,6 @@ from langchain.schema.runnable.config import RunnableConfig
 from dotenv import load_dotenv
 load_dotenv()
 
-st.title('🎈 App Name')
 
 #API KEY
 api_key = '' #Lawyer KEy
