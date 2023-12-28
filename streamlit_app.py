@@ -12,6 +12,7 @@ from langchain.chains import RetrievalQA
 import os
 
 def generate_response( openai_api_key, query_text):
+    os.environ["OPENAI_API_KEY"] = openai_api_key
     # API KEY
 
     import pinecone
