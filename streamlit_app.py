@@ -1,9 +1,4 @@
-import streamlit as st
-
-st.title('🎈 Hukuk LLM')
-
-st.write('Hello world!')
-
+import streamlit as s
 import os
 import openai
 import sys
