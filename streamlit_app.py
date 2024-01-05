@@ -49,7 +49,7 @@ def generate_response( openai_api_key, query_text):
 
     Bu yönergeleri takip ederek, görevin, hukuki karar alma sürecini iyileştirmek, hukuki eğitime yardımcı olmak ve doğru, iyi kaynaklanmış ve profesyonelce ifade edilmiş hukuki bilgilerle adli sistemini desteklemektir.> \
 
-    <kullanıcı sorusu>{query_text}</kullanıcı sorusu>
+    <kullanıcı sorusu>{question}</kullanıcı sorusu>
 
     <bağlam>{context}</bağlam>
     """
