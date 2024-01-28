@@ -10,17 +10,17 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 import os
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
 
 def generate_response( openai_api_key, query_text):
     os.environ["OPENAI_API_KEY"] = openai_api_key
     # API KEY
 
-    import pinecone
-
-    pinecone.init(
-        api_key="8a5d141e-c4a3-4baa-9f05-fa3840dd6a0b",
-        environment="eu-west4-gcp",
-    )
+    from pinecone import Pinecone
+    pc = Pinecone(api_key="8a5d141e-c4a3-4baa-9f05-fa3840dd6a0b")
+    os.environ["PINECONE_API_KEY"] = "8a5d141e-c4a3-4baa-9f05-fa3840dd6a0b"
 
     ## Model initilization
     llm_name = "gpt-4-1106-preview"
@@ -55,20 +55,71 @@ def generate_response( openai_api_key, query_text):
 
     # Vector Database mounting
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-    persist_directory = 'docs/chroma/'
     # vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     index_name = "llm-hukuk-butun"
     vectordb = Pinecone.from_existing_index(index_name, embeddings)
 
-    # Chain initilization
-    qa_chain = RetrievalQA.from_chain_type(
-        llm,
-        retriever=vectordb.as_retriever(),  # search_type='mmr'
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+    question = query_text
+
+
+    prompt = ChatPromptTemplate.from_template("Bu soruya cevap verir misin: {foo}")
+    model = ChatOpenAI()
+    chain = prompt | model | StrOutputParser()
+    result_llm = chain.invoke({"foo": question})
+    print('Soruya cevap verildi. Augmentation DONE !')
+
+    fin_question = question + ' ' + result_llm
+
+
+    ff = vectordb.similarity_search(
+        fin_question,  # our search query
+        k=9  # return 3 most relevant docs
     )
-    result = qa_chain({"query": query_text})
-    return result["result"]
+    print('Augmente edilmis soruyla vectordb source tarama DONE')
+    context = ""
+    for ind,i in enumerate(ff):
+        ind = "[{0}] ".format(str(ind+1))
+        context = context + ind + '\"' + i.page_content + '\"' + '\n\n'
+
+    prompt = """Bu sorguyla “{question}” ilgili pasajlar aşağıdadır. Bu pasajları, sorguyla alakalarına 
+            göre sırala ve cevap olarak sadece pasajların alakalıdan alakasıza sıralı olduğu örnek çıktı formatındaki gibi 
+            çıktı oluştur ve sıralamada bütün pasaj numaraları bulunsun. Yanıtta herhangi bir açıklama yapmak zorunda değilsin, mantık ve muhakemeyi arka planda kendin
+            yapabilirsin. Çıktı içerisinde sıra bilgisini yazmana gerek yok ilk sıradaki en alakalı son sıradaki en az 
+            alakalı olarak kabul edilecektir, sadece pasaj numaraları çıktı içerisinde yer alsın.
+            Senden beklediğimiz örnek format: "[3, 2, ...]" 
+            {context}
+            """
+
+    prompt = ChatPromptTemplate.from_template(prompt)
+    model = ChatOpenAI(model_name=llm_name, temperature=0)
+    chain = prompt | model | StrOutputParser()
+    result_llm = chain.invoke({"question": question, "context":context})
+    print('Siralama tamamlandi!')
+
+    fin_passages = []
+    for i in result_llm:
+        if i.isnumeric():
+            fin_passages.append(int(i))
+
+    newcontext = ""
+    try:
+        new_array = []
+        for ind in fin_passages[:5] :
+            new_array.append(ff[ind-1].page_content)
+            newcontext = newcontext  + '\"' + ff[ind-1].page_content + '\"' + '\n\n'
+            print('Yeni context siralama ile olusturuldu!')
+
+    except:
+        newcontext = newcontext + context
+        print('Siralama sicti, eldekilerle devam!')
+
+
+    prompt = QA_CHAIN_PROMPT
+    model = ChatOpenAI(model_name=llm_name, temperature=0)
+    chain = prompt | model | StrOutputParser()
+    result_llm = chain.invoke({"question": question, "context":newcontext})
+
+    return result_llm
 
 # Page title
 st.set_page_config(page_title='📖 Plus Lawyer Chatbot')
