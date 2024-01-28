@@ -55,6 +55,7 @@ def generate_response( openai_api_key, query_text):
 
     # Vector Database mounting
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    from langchain.vectorstores import Chroma,Pinecone
     # vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     index_name = "llm-hukuk-butun"
     vectordb = Pinecone.from_existing_index(index_name, embeddings)
