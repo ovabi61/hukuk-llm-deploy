@@ -63,7 +63,7 @@ def generate_response( openai_api_key, query_text):
 
 
     prompt = ChatPromptTemplate.from_template("Bu soruya cevap verir misin: {foo}")
-    model = ChatOpenAI()
+    model = ChatOpenAI(model_name=llm_name, temperature=0)
     chain = prompt | model | StrOutputParser()
     result_llm = chain.invoke({"foo": question})
     print('Soruya cevap verildi. Augmentation DONE !')
