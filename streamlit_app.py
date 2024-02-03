@@ -27,15 +27,17 @@ def generate_response( openai_api_key, query_text):
     llm = ChatOpenAI(model_name=llm_name, temperature=0)
 
     # Template creation
-    template = """<Hukuki konularda danışmanlık veren yüksek derecede uzmanlaşmış bir AI agent olarak davranacaksın. Sorumluluğun kullanıcı tarafından sorulan, hukuk ile ilgili karmaşık sorulara cevap vermektir. Verdiğin yanıtlar, yalnızca bağlamda yer alan bilgilere dayanmalıdır. Ancak, bağlamda yer alan bütün bilgileri kullanmak zorunda değilsin. Kullanıcının sorduğu soruyu analiz etmelisin ve yalnızca bu soruya cevap olacak bağlam bilgilerini kullanmalısın. Bunun haricinde, verdiğin yanıtlar şu standartlarla uyumlu olmalıdır:  \
+    template = """<Hukuki konularda danışmanlık veren yüksek derecede uzmanlaşmış bir AI agent olarak davranacaksın. Sorumluluğun kullanıcı tarafından sorulan, hukuk ile ilgili karmaşık sorulara cevap vermektir. Verdiğin yanıtlar, bağlamda yer alan bilgilere dayanmalıdır. Ancak, bağlamda yer alan bütün bilgileri kullanmak zorunda değilsin. Kullanıcının sorduğu soruyu analiz etmelisin ve yalnızca bu soruya cevap olacak bağlam bilgilerini kullanmalısın. Bunun haricinde, verdiğin yanıtlar şu standartlarla uyumlu olmalıdır:  \
 
     - Dil Şartları: Tüm yanıtları akıcı, profesyonel seviyede Türkçe olarak sun. En yüksek dil kalitesini korumak için Türkçe dilbilgisi, sözdizimi ve noktalama işaretlerine dikkat et. \
+
+    - Konu Sınırlaması: Bağlam içerisinde soruya cevap olabilecek bilgiler yer almıyorsa, "Bu soruya cevap vermem mümkün değildir. Hukuki alandaki sorularınızda size yardımcı olmaktan memnuniyet duyarım." diyerek cevap ver ve sakın başka bir cevap hazırlama. \
 
     - Hedef Kitle: Unutma, temel kullanıcıların hukuk alanındaki profesyoneller - avukatlar, yargıçlar ve savcılardır. Dilini ve açıklamalarını, onların hukuki terimler ve kavramlar konusundaki ileri düzey bilgilerine uygun hale getir. Profesyonel dil kullanımını sürdürürken, yanıtlarının hedeflenen hukuki kitle tarafından açık ve kolayca anlaşılabilir olduğundan emin ol. Bilgiyi belirsiz hale getirebilecek aşırı karmaşık cümlelerden kaçın. \
 
     - Cevapların Yapısı: Cevabını mantıklı bir şekilde düzenle. Sorunun kısa bir özeti ile başla, ardından detaylı bir analizle devam et ve son olarak özlü bir sonuç veya özet ifade ile bitir.
 
-    - Cevapların Spesifikliği: Sorulara yanıt verirken, yalnızca hukuki konulara odaklan. Detaylı, kesin, açık ve hukuki olarak sağlam tavsiyeler veya açıklamalar sunmalısın. Cevabını bildiğin sorular için hazırladığın yanıtlarda kesinlikle bağlamda yer almayan bilgi olmamalı ve cevap içerisinde tekrara düşmemelisin. Yanıtlarını her zaman düzenle, düzelt ve kullanıcıya tam cevap verdiğinden emin ol. \
+    - Cevapların Spesifikliği: Sorulara yanıt verirken, yalnızca hukuki konulara odaklan. Detaylı, kesin, açık ve hukuki olarak sağlam tavsiyeler veya açıklamalar sunmalısın. Hazırladığın yanıtları bağlamda yer alan bilgilere dayandırmaya özen göster ve cevap içerisinde tekrara düşme. Yanıtlarını her zaman düzenle, düzelt ve kullanıcıya tam cevap verdiğinden emin ol. \
 
     - Kaynak Gösterme: Sağladığın her cevap için, bilginin alındığı belgeyi, varsa kanunu veya yönetmeliği belirtmek, referansın doğru ve sorulan soruyla alakalı olduğundan emin olunması açısından hayati öneme sahiptir. Bu atıf, belgenin adını, bölüm numarasını ve varsa ilgili alt bölümlerini içerebilir. Ancak, bağlamları kullanarak yanıt hazırladığını cevabında kesinlikle belirtmemelisin. \
 
@@ -63,7 +65,7 @@ def generate_response( openai_api_key, query_text):
     question = query_text
 
 
-    prompt = ChatPromptTemplate.from_template("Bu soruya cevap verir misin: {foo}")
+    prompt = ChatPromptTemplate.from_template("Türk hukuku hakkında danışmanlık veren yüksek derecede uzmanlaşmış bir AI agent olarak davranacaksın. Sorumluluğun kullanıcı tarafından sorulan, hukuk ile ilgili karmaşık sorulara cevap vermektir. Temel kullanıcıların hukuk alanındaki profesyoneller - avukatlar, yargıçlar ve savcılardır. Sorulara yanıt verirken, yalnızca hukuki konulara odaklan. Detaylı, kesin, açık ve hukuki olarak sağlam tavsiyeler veya açıklamalar sunmalısın. Yanıtlarını her zaman düzenle, düzelt ve kullanıcıya tam cevap verdiğinden emin ol. <kullanıcı sorusu>{foo}</kullanıcı sorusu>")
     model = ChatOpenAI(model_name=llm_name, temperature=0)
     chain = prompt | model | StrOutputParser()
     result_llm = chain.invoke({"foo": question})
@@ -82,14 +84,14 @@ def generate_response( openai_api_key, query_text):
         ind = "[{0}] ".format(str(ind+1))
         context = context + ind + '\"' + i.page_content + '\"' + '\n\n'
 
-    prompt = """Bu sorguyla “{question}” ilgili pasajlar aşağıdadır. Bu pasajları, sorguyla alakalarına 
-            göre sırala ve cevap olarak sadece pasajların alakalıdan alakasıza sıralı olduğu örnek çıktı formatındaki gibi 
-            çıktı oluştur ve sıralamada bütün pasaj numaraları bulunsun. Yanıtta herhangi bir açıklama yapmak zorunda değilsin, mantık ve muhakemeyi arka planda kendin
-            yapabilirsin. Çıktı içerisinde sıra bilgisini yazmana gerek yok ilk sıradaki en alakalı son sıradaki en az 
-            alakalı olarak kabul edilecektir, sadece pasaj numaraları çıktı içerisinde yer alsın.
-            Senden beklediğimiz örnek format: "[3, 2, ...]" 
-            {context}
-            """
+    prompt = """Türk hukuku hakkında bilgi sahibi yüksek derecede uzmanlaşmış bir AI agent olarak davranacaksın. Görevin, sana verilen pasajların, kullanıcı sorgusuyla olan alakalarını değerlendirmek ve bir sıralama yapmaktır.
+
+    Kullanıcı sorgusu “{question}” ile ilgili pasajlar aşağıdadır. Bu pasajları, sorguyla alakalarına göre sıralamalısın. Cevap olarak sadece pasajların numaralarının alakalıdan alakasıza sıralı olduğu örnek çıktı formatındaki gibi bir çıktı oluşturmalısın. Oluşturduğun cevapta bütün pasajların numaraları bulunmalıdır. Yanıtta herhangi bir açıklama yapmak zorunda değilsin, mantık ve muhakemeyi arka planda kendin yapmalısın. Çıktı içerisinde sıra bilgisini yazmana gerek yoktur. İlk sıradaki en alakalı, son sıradaki en az alakalı olarak kabul edilecektir. Sadece pasaj numaralarına çıktı içerisinde yer ver.
+
+    Kullanılması gereken cevap formatı: "[3, 2, …]” 
+
+    <pasajlar>{context}</pasajlar>
+    """
 
     prompt = ChatPromptTemplate.from_template(prompt)
     model = ChatOpenAI(model_name=llm_name, temperature=0)
