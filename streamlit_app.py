@@ -19,8 +19,8 @@ def generate_response( openai_api_key, query_text):
     # API KEY
 
     from pinecone import Pinecone
-    pc = Pinecone(api_key="063b7989-52e9-44ff-9c57-2fb86b57cc66")
-    os.environ["PINECONE_API_KEY"] = "063b7989-52e9-44ff-9c57-2fb86b57cc66"
+    pc = Pinecone(api_key="8a5d141e-c4a3-4baa-9f05-fa3840dd6a0b")
+    os.environ["PINECONE_API_KEY"] = "8a5d141e-c4a3-4baa-9f05-fa3840dd6a0b"
 
     ## Model initilization
     llm_name = "gpt-4-1106-preview"
@@ -59,7 +59,7 @@ def generate_response( openai_api_key, query_text):
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     from langchain.vectorstores import Chroma,Pinecone
     # vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
-    index_name = "llm-hukuk-butun-1250"
+    index_name = "llm-hukuk-kanun"
     vectordb = Pinecone.from_existing_index(index_name, embeddings)
 
     question = query_text
