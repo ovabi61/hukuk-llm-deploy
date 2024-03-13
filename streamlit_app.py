@@ -23,6 +23,8 @@ def generate_response( openai_api_key, query_text):
     llm_name = "gpt-4-1106-preview"
     llm = ChatOpenAI(model_name=llm_name, temperature=0)
 
+    embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+
     # vectordb = Pinecone.from_documents(splits,embeddings,index_name="llm-hukuk")
     index_names = ["llm-hukuk-kanun", "llm-hukuk-butun-1250", "llm-hukuk-talimat"]
     pinecone_api_keys = [
